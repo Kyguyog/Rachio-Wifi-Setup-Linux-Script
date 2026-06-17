@@ -21,16 +21,12 @@ I made this because the script provided in the [Official Rachio Support Article]
 ```bash
 wget https://raw.githubusercontent.com/Kyguyog/Rachio-Wifi-Setup-Linux-Script/refs/heads/main/Rachio%2BConnect.sh
 ```
-2. **Make the script executable:**
-```bash
-chmod +x Rachio+Connect.sh
-```
+2. **Connect Computer's Wifi to Rachio-XXXXXX**
 3. **Run the script:**
 ```bash
-./Rachio+Connect.sh
+chmod +x Rachio+Connect.sh && ./Rachio+Connect.sh
 ```
-4. **Connect Computer's Wifi to R**
-
+4. **Follow On-Screen Instructions (Serial # is under faceplate)**
 ---
 
 ## Contributing
