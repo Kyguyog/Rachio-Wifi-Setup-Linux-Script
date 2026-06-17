@@ -21,7 +21,7 @@ I made this because the script provided in the [Official Rachio Support Article]
 ```bash
 wget https://raw.githubusercontent.com/Kyguyog/Rachio-Wifi-Setup-Linux-Script/refs/heads/main/Rachio%2BConnect.sh
 ```
-2. **Connect Computer's Wifi to Rachio-XXXXXX**
+2. **Connect Computer's Wifi to Rachio-XXXXXX (optional)**
 3. **Run the script:**
 ```bash
 chmod +x Rachio+Connect.sh && ./Rachio+Connect.sh
