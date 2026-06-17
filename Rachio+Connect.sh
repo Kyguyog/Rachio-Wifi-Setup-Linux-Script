@@ -5,9 +5,22 @@ if [ "$EUID" -ne 0 ] && command -v iwctl >/dev/null 2>&1; then
   echo "Warning: Running without root. If scanning fails, try running with sudo."
 fi
 
-echo "===================================================="
-echo "   Rachio Wi-Fi Setup & Controller Configurator     "
-echo "===================================================="
+echo "========================"
+echo "   Rachio Wi-Fi Setup   "
+echo "========================"
+
+# Global flag to track if we actually connected via the script
+CONNECTION_SUCCESS=false
+
+# Helper function to ask the user to continue on failure
+prompt_continue() {
+    echo
+    read -p "Do you want to continue anyway? (y=yes, anything else=no): " choice
+    if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
+        echo "Exiting..."
+        exit 1
+    fi
+}
 
 # Function to handle NetworkManager (nmcli)
 handle_network_manager() {
@@ -23,16 +36,19 @@ handle_network_manager() {
     
     if [ -z "$target_ssid" ]; then
         echo "❌ Error: No open network starting with 'Rachio-' found nearby."
-        exit 1
+        prompt_continue
+        return
     fi
     
     echo "Found controller network: $target_ssid"
     echo "Connecting..."
     if nmcli device wifi connect "$target_ssid"; then
         echo "✅ Successfully connected to $target_ssid"
+        CONNECTION_SUCCESS=true
     else
         echo "❌ Failed to connect to $target_ssid"
-        exit 1
+        prompt_continue
+        return
     fi
 }
 
@@ -45,7 +61,8 @@ handle_iwd() {
     
     if [ -z "$wlan_device" ]; then
         echo "❌ Error: Could not detect an active wireless interface using iwctl."
-        exit 1
+        prompt_continue
+        return
     fi
     
     echo "Scanning on interface $wlan_device..."
@@ -57,16 +74,19 @@ handle_iwd() {
     
     if [ -z "$target_ssid" ]; then
         echo "❌ Error: No open network starting with 'Rachio-' found nearby."
-        exit 1
+        prompt_continue
+        return
     fi
     
     echo "Found controller network: $target_ssid"
     echo "Connecting..."
     if iwctl station "$wlan_device" connect "$target_ssid"; then
         echo "✅ Successfully connected to $target_ssid"
+        CONNECTION_SUCCESS=true
     else
         echo "❌ Failed to connect to $target_ssid"
-        exit 1
+        prompt_continue
+        return
     fi
 }
 
@@ -77,13 +97,15 @@ elif command -v iwctl >/dev/null 2>&1; then
     handle_iwd
 else
     echo "❌ Error: Neither nmcli (NetworkManager) nor iwctl (IWD) was found."
-    echo "Please connect to the Rachio Wi-Fi hotspot manually, then rerun this script."
-    exit 1
+    echo "Please connect to the Rachio Wi-Fi hotspot manually."
+    prompt_continue
 fi
 
-# Give the system a brief moment to stabilize DHCP/IP allocation on the new network
-echo "Waiting for local IP assignment..."
-sleep 3
+# Give the system a brief moment to stabilize DHCP/IP allocation ONLY if script connected
+if [ "$CONNECTION_SUCCESS" = true ]; then
+    echo "Waiting for local IP assignment..."
+    sleep 3
+fi
 
 # --- Configuration Phase ---
 echo
